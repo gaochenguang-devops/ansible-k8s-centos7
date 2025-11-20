@@ -69,7 +69,7 @@ ansible-playbook destroy.yml -l k8s-master-1
   - `/etc/cni/net.d`
   - `/root/.kube`
 - 清理 iptables 规则
-- 删除网络接口（flannel.1, cni0）
+- 删除网络接口（flannel.1, cni0, tunl0）
 - 执行 kubeadm reset
 
 ### Final Cleanup（最终清理）
@@ -83,6 +83,7 @@ ansible-playbook destroy.yml -l k8s-master-1
 3. **网络隔离**：销毁后节点将与集群断开连接
 4. **持久化存储**：如有 PVC，请先备份数据
 5. **DNS 更新**：销毁后需要更新相关 DNS 记录
+6. **Calico 清理**：使用 Calico 时，销毁脚本会自动清理 Calico 特定配置（tunl0 接口、iptables 规则、/var/lib/calico 目录）
 
 ## 销毁后恢复
 
@@ -134,4 +135,9 @@ ip link show
 
 # 检查 iptables 规则
 iptables -L -n
+
+# 检查 Calico 状态
+kubectl get pods -n calico-system
+kubectl get ippool
+kubectl get installation
 ```
