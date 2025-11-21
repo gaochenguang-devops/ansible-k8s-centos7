@@ -71,6 +71,20 @@
       ignore_errors: yes
       when: cni_plugin == "calico"
 
+    - name: Clean up Calico interface pods
+      shell: |
+        for iface in $(ip link show | grep 'cali' | awk '{print $2}' | sed 's/:$//'); do
+          ip link delete "$iface" 2>/dev/null || true
+        done
+      ignore_errors: yes
+      when: cni_plugin == "calico"
+
+    - name: Clean up Calico vxlan interface
+      shell: |
+        ip link delete vxlan.calico 2>/dev/null || true
+      ignore_errors: yes
+      when: cni_plugin == "calico"
+
     - name: Clean up Calico directories
       file:
         path: "{{ item }}"

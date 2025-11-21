@@ -41,3 +41,10 @@
     - nginx-proxy
   roles:
     - nginx-proxy
+
+- name: Approve pending kubelet CSRs
+  hosts: masters[0]
+  tags:
+    - csr-approve
+  roles:
+    - csr-approve

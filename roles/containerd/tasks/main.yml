@@ -28,6 +28,12 @@
     regexp: '^\s*sandbox_image = ".*"'
     line: '    sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.9"'
 
+- name: Set containerd cgroup driver to systemd
+  lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^\s*SystemdCgroup = false'
+    line: '      SystemdCgroup = true'
+
 - name: Enable and restart containerd service
   systemd:
     name: containerd

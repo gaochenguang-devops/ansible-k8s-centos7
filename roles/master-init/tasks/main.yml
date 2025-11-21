@@ -77,3 +77,16 @@
     remote_src: yes
     mode: '0600'
   when: inventory_hostname != groups['masters'][0] and inventory_hostname in groups['masters']
+
+- name: Check if kubelet config needs update
+  shell: grep -q '127.0.0.1:6443' /etc/kubernetes/kubelet.conf && echo 'updated' || echo 'not_updated'
+  register: kubelet_config_check
+  changed_when: false
+  ignore_errors: yes
+
+- name: Update kubelet kubeconfig to use local nginx proxy
+  shell: |
+    sed -i 's|https://.*:6443|https://127.0.0.1:6443|g' /etc/kubernetes/kubelet.conf
+  notify: Restart kubelet
+  when: kubelet_config_check.stdout == 'not_updated'
+  

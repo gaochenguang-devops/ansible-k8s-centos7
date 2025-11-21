@@ -10,6 +10,7 @@ apiServer:
   certSANs:
 {% for host in groups['masters'] %}
     - {{ hostvars[host]['ansible_host'] }}
+    - {{ host }}
 {% endfor %}
     - 127.0.0.1
     - localhost
@@ -28,3 +29,19 @@ nodeRegistration:
   criSocket: unix:///run/containerd/containerd.sock
   kubeletExtraArgs:
     cgroup-driver: systemd
+    node-ip: "{{ ansible_host }}"
+    hostname-override: "{{ inventory_hostname }}"
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+  kubeletExtraArgs:
+    cgroup-driver: systemd
+    node-ip: "{{ ansible_host }}"
+    hostname-override: "{{ inventory_hostname }}"
+
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+serverTLSBootstrap: true

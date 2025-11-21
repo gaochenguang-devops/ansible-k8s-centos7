@@ -1,0 +1,14 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: "{{ control_plane_endpoint }}"
+    token: "{{ join_token }}"
+    caCertHashes:
+      - "{{ discovery_hash }}"
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+  kubeletExtraArgs:
+    cgroup-driver: systemd
+    node-ip: "{{ ansible_host }}"
+    hostname-override: "{{ inventory_hostname }}"

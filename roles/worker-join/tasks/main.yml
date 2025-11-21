@@ -11,6 +11,27 @@
   run_once: true
   when: inventory_hostname in groups['workers'] and not kubelet_conf_stat.stat.exists
 
+- name: Extract token and discovery hash from join command
+  set_fact:
+    join_token: "{{ worker_join_command.stdout | regex_search('--token\\s+(\\S+)', '\\1') | first }}"
+    discovery_hash: "{{ worker_join_command.stdout | regex_search('--discovery-token-ca-cert-hash\\s+(\\S+)', '\\1') | first }}"
+    control_plane_endpoint: "{{ worker_join_command.stdout | regex_search('(\\S+:\\d+)', '\\1') | first }}"
+  when: inventory_hostname in groups['workers'] and not kubelet_conf_stat.stat.exists
+
+- name: Create kubeadm join config directory
+  file:
+    path: /etc/kubernetes/kubeadm
+    state: directory
+    mode: '0755'
+  when: inventory_hostname in groups['workers'] and not kubelet_conf_stat.stat.exists
+
+- name: Generate kubeadm join config with token and discovery hash
+  template:
+    src: kubeadm-join-config.yaml.j2
+    dest: /etc/kubernetes/kubeadm/kubeadm-join-config.yaml
+    mode: '0644'
+  when: inventory_hostname in groups['workers'] and not kubelet_conf_stat.stat.exists
+
 - name: Join worker nodes
-  shell: "{{ worker_join_command.stdout }}"
+  shell: "kubeadm join --config=/etc/kubernetes/kubeadm/kubeadm-join-config.yaml"
   when: inventory_hostname in groups['workers'] and not kubelet_conf_stat.stat.exists

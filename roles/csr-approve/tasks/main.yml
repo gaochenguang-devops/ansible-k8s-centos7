@@ -1,0 +1,15 @@
+---
+- name: Approve pending kubelet CSRs
+  shell: |
+    set -euo pipefail
+    kubectl get csr --no-headers 2>/dev/null |grep kubelet-serving| awk '$6=="Pending" {print $1}' | xargs -r -I {} kubectl certificate approve {}
+    kubectl get csr --no-headers 2>/dev/null |grep kubelet-serving| awk '$6=="Pending"' | wc -l
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: /root/.kube/config
+  register: csr_pending_count
+  changed_when: csr_pending_count.stdout|int >= 0
+  retries: 10
+  delay: 6
+  until: csr_pending_count.stdout|int == 0
