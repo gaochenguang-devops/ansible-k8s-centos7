@@ -19,14 +19,6 @@
   roles:
     - master-init
 
-- name: Install CNI plugin
-  hosts: masters[0]
-  tags:
-    - cni
-    - cni-plugin
-  roles:
-    - cni-plugin
-
 - name: Join worker nodes
   hosts: workers
   tags:
@@ -48,3 +40,11 @@
     - csr-approve
   roles:
     - csr-approve
+
+- name: Install CNI plugin
+  hosts: masters[0]
+  tags:
+    - cni
+    - cni-plugin
+  roles:
+    - cni-plugin
